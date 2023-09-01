@@ -1,0 +1,25 @@
+{
+  "name": "link-icon",
+  "author": "chenshinshi",
+  "url": "https://github.com/chenshinshi/link-icon",
+  "version": "1.0.0",
+  "minAppVersion": "2.8.9",
+  "backends": [
+        "all"
+  ],
+  "frontends": [
+        "all"
+  ],
+  "displayName": {
+    "en_US": "link-icon",
+    "zh_CN": "链接图标"
+  },
+  "description": {
+    "en_US": "为不装配链接图标的主题提供链接图标。",
+    "zh_CN": "为不装配链接图标的主题提供链接图标。"
+  },
+  "readme": {
+    "en_US": "README.md",
+    "zh_CN": "README.md"
+  }
+}
