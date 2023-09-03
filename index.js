@@ -87,7 +87,7 @@ class LinkIconPlugin extends siyuan.Plugin{
 
             // 如果前一个元素是图标，则不再添加
             let previes_sibling = element.previousSibling;
-            if (previes_sibling !== null && previes_sibling.classList.contains(ICON_CLASS)) {
+            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
                 continue;
             }
 
