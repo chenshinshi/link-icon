@@ -7,13 +7,18 @@ async function getDocIcon(block_id) {
         {
             id: block_id
         }
-    )
-    let icon_code = response.code === 200 ? null : response.data.icon
-    // 这里可以考虑参考目录插件，插入文档默认的图标
-    let block_icon = icon_code 
-        ? String.fromCodePoint(parseInt(icon_code, 16))
-        : ""
-    return block_icon;
+    );
+    if (response.code !== 0) {
+        return "";
+    }
+
+    let icon_code = response.data.icon;;
+    let sub_file_cnt = response.data.subFileCount;
+    if (icon_code === "") {
+        return sub_file_cnt > 0 ? "📑" : "📄";
+    }
+
+    return String.fromCodePoint(parseInt(icon_code, 16));;
 }
 
 
