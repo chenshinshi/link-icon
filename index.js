@@ -23,10 +23,6 @@ async function sql(sql) {
 /**
  * 获取文档块的图标
  * @param {string} block_id
- * @returns icon_dom
- *    - null: 不是文档块
- *    - <img class="plugin-link-icon" />: svg 图标
- *    - <span class="plugin-link-icon" />: emoji 图标
  */
 async function getDocIconDom(block_id) {
     //如果不是文档块，则不添加图标
@@ -48,23 +44,34 @@ async function getDocIconDom(block_id) {
 
     let icon_code = response.data.icon;
     let sub_file_cnt = response.data.subFileCount;
+
     // 默认文档图标
     if (icon_code === "") {
-        return sub_file_cnt > 0
-            ? `<span class="${ICON_CLASS}">📑</span>`
-            : `<span class="${ICON_CLASS}">📄</span>`;
+        let code =  sub_file_cnt > 0 ? '📑' : '📄';
+        let dom = `<span data-type="text" class="${ICON_CLASS}">${code}</span>`
+        return {
+            type: 'unicode',
+            dom: dom,
+            code: code
+        }
     }
 
-    let icon_dom = "";
+    let result = {
+        type: "unicode",
+        dom: "",
+        code: icon_code
+    }
     //使用了自定义的 svg 图标 vs 使用 unicode 编码的 emoji
     if (icon_code.toLowerCase().endsWith(".svg")) {
-        icon_dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
+        result.type = "svg";
+        result.dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
     } else {
-        icon_dom = String.fromCodePoint(parseInt(icon_code, 16))
-        icon_dom = `<span class="${ICON_CLASS}">${icon_dom}</span>`
+        result.type = "unicode";
+        result.code = String.fromCodePoint(parseInt(icon_code, 16))
+        result.dom = `<span data-type="text" class="${ICON_CLASS}">${result.code}</span>`
     }
 
-    return icon_dom;
+    return result;
 }
 
 
@@ -86,17 +93,27 @@ class LinkIconPlugin extends siyuan.Plugin{
             let element = ref_list[index];
 
             // 如果前一个元素是图标，则不再添加
-            let previes_sibling = element.previousSibling;
+            let previes_sibling = element.previousElementSibling;
             if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
                 continue;
             }
+            let previous_txt = previes_sibling?.textContent;
 
             let block_id = element.attributes["data-id"].value;
-            let block_icon = await getDocIconDom(block_id);
-            if (block_icon === null) {
+            let result = await getDocIconDom(block_id);
+            if (result === null) {
                 continue;
             }
-            element.insertAdjacentHTML('beforebegin', block_icon);
+            //Type 1. 思源有可能把之前的 unicode 识别为锚文本的一部分
+            if (element.innerHTML.startsWith(result.code)) {
+                element.innerHTML = element.innerHTML.substring(result.code.length);
+            }
+            //Type 2. 思源还有可能把 icon 的 span 元素保留了下来
+            if (result.type === 'unicode' && result.code === previous_txt.trim()) {
+                previes_sibling.classList.add(ICON_CLASS);
+                continue;
+            }
+            element.insertAdjacentHTML('beforebegin', result.dom);
         }
     }
 }
