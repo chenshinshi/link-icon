@@ -109,7 +109,7 @@ class LinkIconPlugin extends siyuan.Plugin{
                 element.innerHTML = element.innerHTML.substring(result.code.length);
             }
             //Type 2. 思源还有可能把 icon 的 span 元素保留了下来
-            if (result.type === 'unicode' && result.code === previous_txt.trim()) {
+            if (result.type === 'unicode' && result.code === previous_txt?.trim()) {
                 previes_sibling.classList.add(ICON_CLASS);
                 continue;
             }
