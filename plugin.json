@@ -2,8 +2,8 @@
   "name": "link-icon",
   "author": "chenshinshi",
   "url": "https://github.com/chenshinshi/link-icon",
-  "version": "1.1.0",
-  "minAppVersion": "2.8.9",
+  "version": "2.0.0",
+  "minAppVersion": "2.9.0",
   "backends": [
         "all"
   ],
@@ -15,11 +15,11 @@
     "zh_CN": "链接图标"
   },
   "description": {
-    "en_US": "为不装配链接图标的主题提供链接图标，引用文档时显示图标。",
+    "en_US": "Provide link icons for themes that do not have built-in link icons and display icons when referencing documents.",
     "zh_CN": "为不装配链接图标的主题提供链接图标，引用文档时显示图标。"
   },
   "readme": {
-    "en_US": "README.md",
+    "en_US": "README_en_US.md",
     "zh_CN": "README.md"
   }
 }

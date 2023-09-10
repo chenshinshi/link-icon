@@ -1,2 +1,10 @@
 {
+    "InputDocRef": {
+        "title": "Insert doc ref icon",
+        "description": "Insert icon before a document ref [[ref]]"
+    },
+    "InputDocLink": {
+        "title": "Insert doc link icon",
+        "description": "Insert icon before a document link [](siyuan://)"
+    }
 }

@@ -23,12 +23,8 @@ async function sql(sql) {
 /**
  * 获取文档块的图标
  * @param {string} block_id
- * @returns icon_dom
- *    - null: 不是文档块
- *    - <img class="plugin-link-icon" />: svg 图标
- *    - <span class="plugin-link-icon" />: emoji 图标
  */
-async function getDocIconDom(block_id) {
+async function queryDocIcon(block_id) {
     //如果不是文档块，则不添加图标
     let blocks = await sql(`select * from blocks where id = "${block_id}"`);
     if (blocks?.[0] === null || blocks[0].type !== 'd') {
@@ -48,75 +44,160 @@ async function getDocIconDom(block_id) {
 
     let icon_code = response.data.icon;
     let sub_file_cnt = response.data.subFileCount;
+
     // 默认文档图标
     if (icon_code === "") {
-        return sub_file_cnt > 0
-            ? `<span class="${ICON_CLASS}">📑</span>`
-            : `<span class="${ICON_CLASS}">📄</span>`;
+        let code =  sub_file_cnt > 0 ? '📑' : '📄';
+        let dom = `<span data-type="text" class="${ICON_CLASS}">${code}</span>`
+        return {
+            type: 'unicode',
+            dom: dom,
+            code: code
+        }
     }
 
-    let icon_dom = "";
+    let result = {
+        type: "unicode",
+        dom: "",
+        code: icon_code
+    }
     //使用了自定义的 svg 图标 vs 使用 unicode 编码的 emoji
     if (icon_code.toLowerCase().endsWith(".svg")) {
-        icon_dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
+        result.type = "svg";
+        result.dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
     } else {
-        icon_dom = String.fromCodePoint(parseInt(icon_code, 16))
-        icon_dom = `<span class="${ICON_CLASS}">${icon_dom}</span>`
+        result.type = "unicode";
+        result.code = String.fromCodePoint(parseInt(icon_code, 16))
+        result.dom = `<span data-type="text" class="${ICON_CLASS}">${result.code}</span>`
     }
 
-    return icon_dom;
+    return result;
 }
 
+function isUnicodeEmoji(text) {
+    const regex = /\p{Emoji}/u;
+    return regex.test(text);
+}
+
+const ConfigFile = 'config.json'
 
 class LinkIconPlugin extends siyuan.Plugin{
-    async onload() {
-        this.eventBus.on('loaded-protyle', this.listeners)
+
+    Listener = this.listeners.bind(this);
+
+    config = {
+        InsertDocRefIcon: true,
+        InsertDocLinkIcon: false
     }
 
-    async unload() {
-        this.eventBus.off('loaded-protyle', this.listeners)
+    async onload() {
+        this.initUI();
+
+        let conf = await this.loadData(ConfigFile);
+        if (conf) {
+            for (let key in this.config) {
+                let val = conf?.[key];
+                if (val !== undefined) {
+                    this.config[key] = val;
+                }
+            }
+        }
+        this.eventBus.on('loaded-protyle', this.Listener)
+    }
+
+    async onunload() {
+        this.eventBus.off('loaded-protyle', this.Listener)
+        this.saveData(ConfigFile, this.config);
+    }
+
+    initUI() {
+        const inputDocRef = document.createElement('input');
+        inputDocRef.type = 'checkbox';
+        inputDocRef.className = "b3-switch fn__flex-center";
+        const inputDocLink = document.createElement('input');
+        inputDocLink.type = 'checkbox';
+        inputDocLink.className = "b3-switch fn__flex-center";
+        this.setting = new siyuan.Setting({
+            width: '500px',
+            height: '400px',
+            confirmCallback: () => {
+                this.config.InsertDocRefIcon = inputDocRef.checked;
+                this.config.InsertDocLinkIcon = inputDocLink.checked;
+                this.saveData(ConfigFile, this.config);
+            }
+        });
+        this.setting.addItem({
+            title: this.i18n.InputDocRef.title,
+            description: this.i18n.InputDocRef.description,
+            createActionElement: () => {
+                inputDocRef.checked = this.config.InsertDocRefIcon;
+                return inputDocRef;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.InputDocLink.title,
+            description: this.i18n.InputDocLink.description,
+            createActionElement: () => {
+                inputDocLink.checked = this.config.InsertDocLinkIcon;
+                return inputDocLink;
+            },
+        });
     }
 
     async listeners(event) {
         // 仅给触发加载文档的元素添加块引用图标
         let doc = event.detail.element;
-        let ref_list = doc.querySelectorAll("span[data-type='block-ref']")
 
-        for (let index = 0; index < ref_list.length; index++) {
-            let element = ref_list[index];
-
-            // 如果前一个元素是图标，则不再添加
-            let previes_sibling = element.previousSibling;
-            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
-                continue;
-            }
-
-            let block_id = element.attributes["data-id"].value;
-            let block_icon = await getDocIconDom(block_id);
-            if (block_icon === null) {
-                continue;
-            }
-            element.insertAdjacentHTML('beforebegin', block_icon);
+        if (this.config.InsertDocRefIcon) {
+            let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
+            ref_list.forEach(async (element) => {
+                let block_id = element.attributes["data-id"].value;
+                this.insertDocIconBefore(element, block_id);
+            });
         }
-        let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
-        [].forEach.call(url_list, async (element)=>{
-            let previes_sibling = element.previousSibling;
-            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
-                return;
-            }
-            let data_href = element.attributes["data-href"].value;
-            const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
-            const result = data_href.match(pattern);
 
-            if (result) {
-                const block_id = result[1];
-                let block_icon = await getDocIconDom(block_id);
-                if (block_icon === null) {
-                    return;
+        if (this.config.InsertDocLinkIcon) {
+            let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
+            url_list.forEach(async (element) => {
+                let data_href = element.attributes["data-href"].value;
+                const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
+                const result = data_href.match(pattern);
+                if (result) {
+                    const block_id = result[1];
+                    this.insertDocIconBefore(element, block_id);
                 }
-                element.insertAdjacentHTML('beforebegin', block_icon);
-            }
-        });
+            });
+        }
+    }
+
+    /**
+     * 
+     * @param {HTMLSpanElement} element Span element
+     */
+    async insertDocIconBefore(element, block_id) {
+        let previes_sibling = element.previousElementSibling;
+        //如果前面的 span 元素是我们自定义插入的 icon, 就直接退出不管
+        //不过实测由于思源会把自定义的 class 删掉, 所以这行逻辑没啥卵用...
+        if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
+            return false;
+        }
+        let previous_txt = previes_sibling?.innerText;
+        if (isUnicodeEmoji(previous_txt)) {
+            return true;
+        }
+
+        // let block_id = element.attributes["data-id"].value;
+        let result = await queryDocIcon(block_id);
+        if (result === null) {
+            return false;
+        }
+        //思源有可能把 icon 的 span 元素保留了下来, 所以如果发现前面的 element 就是 icon, 就不需要再次插入
+        if (result.type === 'unicode' && result.code === previous_txt?.trim()) {
+            previes_sibling.classList.add(ICON_CLASS);
+            return true;
+        }
+        element.insertAdjacentHTML('beforebegin', result.dom);
+        return true;
     }
 }
 
