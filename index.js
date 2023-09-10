@@ -118,6 +118,8 @@ class LinkIconPlugin extends siyuan.Plugin{
         inputDocLink.type = 'checkbox';
         inputDocLink.className = "b3-switch fn__flex-center";
         this.setting = new siyuan.Setting({
+            width: '500px',
+            height: '400px',
             confirmCallback: () => {
                 this.config.InsertDocRefIcon = inputDocRef.checked;
                 this.config.InsertDocLinkIcon = inputDocLink.checked;
