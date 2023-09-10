@@ -115,6 +115,25 @@ class LinkIconPlugin extends siyuan.Plugin{
             }
             element.insertAdjacentHTML('beforebegin', result.dom);
         }
+        let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
+        [].forEach.call(url_list, async (element)=>{
+            let previes_sibling = element.previousSibling;
+            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
+                return;
+            }
+            let data_href = element.attributes["data-href"].value;
+            const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
+            const result = data_href.match(pattern);
+
+            if (result) {
+                const block_id = result[1];
+                let block_icon = await getDocIconDom(block_id);
+                if (block_icon === null) {
+                    return;
+                }
+                element.insertAdjacentHTML('beforebegin', block_icon);
+            }
+        });
     }
 }
 
