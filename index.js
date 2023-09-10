@@ -24,7 +24,7 @@ async function sql(sql) {
  * 获取文档块的图标
  * @param {string} block_id
  */
-async function getDocIconDom(block_id) {
+async function queryDocIcon(block_id) {
     //如果不是文档块，则不添加图标
     let blocks = await sql(`select * from blocks where id = "${block_id}"`);
     if (blocks?.[0] === null || blocks[0].type !== 'd') {
@@ -74,66 +74,72 @@ async function getDocIconDom(block_id) {
     return result;
 }
 
+function isUnicodeEmoji(text) {
+    const regex = /\p{Emoji}/u;
+    return regex.test(text);
+}
 
 class LinkIconPlugin extends siyuan.Plugin{
+
+    Listener = this.listeners.bind(this);
+
     async onload() {
-        this.eventBus.on('loaded-protyle', this.listeners)
+        this.eventBus.on('loaded-protyle', this.Listener)
     }
 
     async unload() {
-        this.eventBus.off('loaded-protyle', this.listeners)
+        this.eventBus.off('loaded-protyle', this.Listener)
     }
 
     async listeners(event) {
         // 仅给触发加载文档的元素添加块引用图标
         let doc = event.detail.element;
-        let ref_list = doc.querySelectorAll("span[data-type='block-ref']")
-
-        for (let index = 0; index < ref_list.length; index++) {
-            let element = ref_list[index];
-
-            // 如果前一个元素是图标，则不再添加
-            let previes_sibling = element.previousElementSibling;
-            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
-                continue;
-            }
-            let previous_txt = previes_sibling?.textContent;
-
+        let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
+        ref_list.forEach(async (element) => {
             let block_id = element.attributes["data-id"].value;
-            let result = await getDocIconDom(block_id);
-            if (result === null) {
-                continue;
-            }
-            //Type 1. 思源有可能把之前的 unicode 识别为锚文本的一部分
-            if (element.innerHTML.startsWith(result.code)) {
-                element.innerHTML = element.innerHTML.substring(result.code.length);
-            }
-            //Type 2. 思源还有可能把 icon 的 span 元素保留了下来
-            if (result.type === 'unicode' && result.code === previous_txt?.trim()) {
-                previes_sibling.classList.add(ICON_CLASS);
-                continue;
-            }
-            element.insertAdjacentHTML('beforebegin', result.dom);
-        }
+            this.insertDocIconBefore(element, block_id);
+        });
+
         let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
-        [].forEach.call(url_list, async (element)=>{
-            let previes_sibling = element.previousSibling;
-            if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
-                return;
-            }
+        url_list.forEach(async (element) => {
             let data_href = element.attributes["data-href"].value;
             const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
             const result = data_href.match(pattern);
-
             if (result) {
                 const block_id = result[1];
-                let block_icon = await getDocIconDom(block_id);
-                if (block_icon === null) {
-                    return;
-                }
-                element.insertAdjacentHTML('beforebegin', block_icon);
+                this.insertDocIconBefore(element, block_id);
             }
         });
+    }
+
+    /**
+     * 
+     * @param {HTMLSpanElement} element Span element
+     */
+    async insertDocIconBefore(element, block_id) {
+        let previes_sibling = element.previousElementSibling;
+        //如果前面的 span 元素是我们自定义插入的 icon, 就直接退出不管
+        //不过实测由于思源会把自定义的 class 删掉, 所以这行逻辑没啥卵用...
+        if (previes_sibling !== null && previes_sibling?.classList?.contains(ICON_CLASS)) {
+            return false;
+        }
+        let previous_txt = previes_sibling?.innerText;
+        if (isUnicodeEmoji(previous_txt)) {
+            return true;
+        }
+
+        // let block_id = element.attributes["data-id"].value;
+        let result = await queryDocIcon(block_id);
+        if (result === null) {
+            return false;
+        }
+        //思源有可能把 icon 的 span 元素保留了下来, 所以如果发现前面的 element 就是 icon, 就不需要再次插入
+        if (result.type === 'unicode' && result.code === previous_txt?.trim()) {
+            previes_sibling.classList.add(ICON_CLASS);
+            return true;
+        }
+        element.insertAdjacentHTML('beforebegin', result.dom);
+        return true;
     }
 }
 
