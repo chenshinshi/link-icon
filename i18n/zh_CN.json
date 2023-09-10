@@ -1,2 +1,10 @@
 {
+    "InputDocRef": {
+        "title": "文档引用图标",
+        "description": "在文档引用 [[ref]] 前插入图标"
+    },
+    "InputDocLink": {
+        "title": "文档链接图标",
+        "description": "在文档引用 [](siyuan://) 前插入图标"
+    }
 }

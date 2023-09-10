@@ -79,37 +79,93 @@ function isUnicodeEmoji(text) {
     return regex.test(text);
 }
 
+const ConfigFile = 'config.json'
+
 class LinkIconPlugin extends siyuan.Plugin{
 
     Listener = this.listeners.bind(this);
 
+    config = {
+        InsertDocRefIcon: true,
+        InsertDocLinkIcon: false
+    }
+
     async onload() {
+        this.initUI();
+
+        let conf = await this.loadData(ConfigFile);
+        if (conf) {
+            for (let key in this.config) {
+                let val = conf?.[key];
+                if (val !== undefined) {
+                    this.config[key] = val;
+                }
+            }
+        }
         this.eventBus.on('loaded-protyle', this.Listener)
     }
 
-    async unload() {
+    async onunload() {
         this.eventBus.off('loaded-protyle', this.Listener)
+        this.saveData(ConfigFile, this.config);
+    }
+
+    initUI() {
+        const inputDocRef = document.createElement('input');
+        inputDocRef.type = 'checkbox';
+        inputDocRef.className = "b3-switch fn__flex-center";
+        const inputDocLink = document.createElement('input');
+        inputDocLink.type = 'checkbox';
+        inputDocLink.className = "b3-switch fn__flex-center";
+        this.setting = new siyuan.Setting({
+            confirmCallback: () => {
+                this.config.InsertDocRefIcon = inputDocRef.checked;
+                this.config.InsertDocLinkIcon = inputDocLink.checked;
+                this.saveData(ConfigFile, this.config);
+            }
+        });
+        this.setting.addItem({
+            title: this.i18n.InputDocRef.title,
+            description: this.i18n.InputDocRef.description,
+            createActionElement: () => {
+                inputDocRef.checked = this.config.InsertDocRefIcon;
+                return inputDocRef;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.InputDocLink.title,
+            description: this.i18n.InputDocLink.description,
+            createActionElement: () => {
+                inputDocLink.checked = this.config.InsertDocLinkIcon;
+                return inputDocLink;
+            },
+        });
     }
 
     async listeners(event) {
         // 仅给触发加载文档的元素添加块引用图标
         let doc = event.detail.element;
-        let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
-        ref_list.forEach(async (element) => {
-            let block_id = element.attributes["data-id"].value;
-            this.insertDocIconBefore(element, block_id);
-        });
 
-        let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
-        url_list.forEach(async (element) => {
-            let data_href = element.attributes["data-href"].value;
-            const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
-            const result = data_href.match(pattern);
-            if (result) {
-                const block_id = result[1];
+        if (this.config.InsertDocRefIcon) {
+            let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
+            ref_list.forEach(async (element) => {
+                let block_id = element.attributes["data-id"].value;
                 this.insertDocIconBefore(element, block_id);
-            }
-        });
+            });
+        }
+
+        if (this.config.InsertDocLinkIcon) {
+            let url_list = doc.querySelectorAll("span[data-type=a][data-href^=siyuan]");
+            url_list.forEach(async (element) => {
+                let data_href = element.attributes["data-href"].value;
+                const pattern = new RegExp("siyuan:\\/\\/blocks\\/(.*)");
+                const result = data_href.match(pattern);
+                if (result) {
+                    const block_id = result[1];
+                    this.insertDocIconBefore(element, block_id);
+                }
+            });
+        }
     }
 
     /**
