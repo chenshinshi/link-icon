@@ -519,13 +519,22 @@
 }
 
 
-.protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href *="github.com"]:not(:empty)::before,
-.protyle-wysiwyg [data-node-id] a[href *="github.com"]::before,
-.b3-typography a[href *="github.com"]::before{
+html[data-theme-mode="dark"] .protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href *="github.com"]:not(:empty)::before,
+html[data-theme-mode="dark"] .protyle-wysiwyg [data-node-id] a[href *="github.com"]::before,
+html[data-theme-mode="dark"] .b3-typography a[href *="github.com"]::before{
 
     content: "";
-    background-image: url('plugins/link-icon/icon/github_icon.png');
+    background-image: url('plugins/link-icon/icon/github_icon-inwhite.png');
 }
+html[data-theme-mode="light"] .protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href *="github.com"]:not(:empty)::before,
+html[data-theme-mode="light"] .protyle-wysiwyg [data-node-id] a[href *="github.com"]::before,
+html[data-theme-mode="light"] .b3-typography a[href *="github.com"]::before{
+
+    content: "";
+    background-image: url('plugins/link-icon/icon/github_icon-inblack.png');
+}
+
+
 .protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href *="bing.com"]:not(:empty)::before,
 .protyle-wysiwyg [data-node-id] a[href *="bing.com"]::before,
 .b3-typography a[href *="bing.com"]::before{
