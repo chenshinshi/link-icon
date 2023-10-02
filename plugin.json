@@ -2,7 +2,7 @@
   "name": "link-icon",
   "author": "chenshinshi",
   "url": "https://github.com/chenshinshi/link-icon",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "minAppVersion": "2.9.0",
   "backends": [
         "all"
