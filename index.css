@@ -1,5 +1,5 @@
-.protyle-wysiwyg [data-node-id] span[data-type='a']:not(:empty)::before,
-.protyle-wysiwyg [data-node-id] span[data-type='url']:not(:empty)::before,
+.protyle-wysiwyg [data-node-id] span[data-type~='a']:not(:empty)::before,
+.protyle-wysiwyg [data-node-id] span[data-type~='url']:not(:empty)::before,
 .b3-typography a:not(:empty)::before,
 .protyle-wysiwyg [data-node-id] a:not(:empty)::before {
     display: inline-block;
