@@ -65,6 +65,9 @@ async function queryDocIcon(block_id) {
     if (icon_code.toLowerCase().endsWith(".svg")) {
         result.type = "svg";
         result.dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
+    } else if (icon_code.toLowerCase().match(/\.(jpeg|jpg|png)$/)) {
+        result.type = "image";
+        result.dom = `<img alt="${icon_code}" class="${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}" style="width: 1.625em; height: 1.625em; padding-right: 3px; padding-bottom:3px; border-radius: 0.5em">`
     } else {
         result.type = "unicode";
         result.code = String.fromCodePoint(parseInt(icon_code, 16))
