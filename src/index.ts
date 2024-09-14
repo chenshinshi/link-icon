@@ -1,5 +1,8 @@
 "use strict";
-const siyuan = require("siyuan");
+// const siyuan = require("siyuan");
+import * as siyuan from "siyuan";
+
+import './style.css';
 
 const ICON_CLASS = "plugin-link-icon";
 
@@ -84,7 +87,7 @@ function isUnicodeEmoji(text) {
 
 const ConfigFile = 'config.json'
 
-class LinkIconPlugin extends siyuan.Plugin{
+export default class LinkIconPlugin extends siyuan.Plugin{
 
     Listener = this.listeners.bind(this);
 
@@ -105,12 +108,11 @@ class LinkIconPlugin extends siyuan.Plugin{
                 }
             }
         }
-        this.eventBus.on('loaded-protyle', this.Listener)
+        this.eventBus.on('loaded-protyle-static', this.Listener);
     }
 
     async onunload() {
-        this.eventBus.off('loaded-protyle', this.Listener)
-        this.saveData(ConfigFile, this.config);
+        this.eventBus.off('loaded-protyle-static', this.Listener);
     }
 
     initUI() {
@@ -203,5 +205,3 @@ class LinkIconPlugin extends siyuan.Plugin{
         return true;
     }
 }
-
-module.exports = LinkIconPlugin;

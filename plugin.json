@@ -3,12 +3,12 @@
   "author": "chenshinshi",
   "url": "https://github.com/chenshinshi/link-icon",
   "version": "2.4.1",
-  "minAppVersion": "2.9.0",
+  "minAppVersion": "3.0.0",
   "backends": [
-        "all"
+    "all"
   ],
   "frontends": [
-        "all"
+    "all"
   ],
   "displayName": {
     "en_US": "link-icon",
