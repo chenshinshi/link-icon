@@ -25,4 +25,4 @@
 2. 在 Select Icon 选择想要的图标
 3. 点击 Upload 按钮上传图标
 
-所有上传的的图标保存在 `/data/plugins/link-icon/custom-icons` 目录下。
+所有上传的的图标保存在 `/data/public/custom-link-icons` 目录下。

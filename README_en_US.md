@@ -24,4 +24,4 @@ In the settings interface, click the "Upload Custom Icon" button. In the pop-up 
 2. Select the desired icon from the Select Icon options.
 3. Click the Upload button to upload the icon.
 
-All uploaded icons are saved in the `/data/plugins/link-icon/custom-icons` directory.
+All uploaded icons are saved in the `/data/public/custom-link-icons` directory.
