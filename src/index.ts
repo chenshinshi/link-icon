@@ -2,6 +2,8 @@
 // const siyuan = require("siyuan");
 import * as siyuan from "siyuan";
 
+import { uploadCustomIcon, useDynamicStyle } from "./custom-icon";
+
 import './style.css';
 
 const ICON_CLASS = "plugin-link-icon";
@@ -36,7 +38,7 @@ async function queryDocIcon(block_id) {
     }
 
     let response = await siyuan.fetchSyncPost(
-        '/api/block/getDocInfo', 
+        '/api/block/getDocInfo',
         {
             id: block_id
         }
@@ -50,7 +52,7 @@ async function queryDocIcon(block_id) {
 
     // 默认文档图标
     if (icon_code === "") {
-        let code =  sub_file_cnt > 0 ? '📑' : '📄';
+        let code = sub_file_cnt > 0 ? '📑' : '📄';
         let dom = `<span data-type="text" class="${ICON_CLASS}">${code}</span>`
         return {
             type: 'unicode',
@@ -85,9 +87,28 @@ function isUnicodeEmoji(text) {
     return regex.test(text);
 }
 
-const ConfigFile = 'config.json'
+const ConfigFile = 'config.json';
+const customIconsFile = 'custom-icons.json';
 
-export default class LinkIconPlugin extends siyuan.Plugin{
+const simpleDialog = (args: {
+    title: string, ele: HTMLElement | DocumentFragment,
+    width?: string, height?: string,
+    callback?: () => void;
+}) => {
+    const dialog = new siyuan.Dialog({
+        title: args.title,
+        content: `<div class="dialog-content" style="display: flex; height: 100%;"/>`,
+        width: args.width,
+        height: args.height,
+        destroyCallback: args.callback
+    });
+    dialog.element.querySelector(".dialog-content").appendChild(args.ele);
+    return dialog;
+}
+
+const dynamicStyle = useDynamicStyle();
+
+export default class LinkIconPlugin extends siyuan.Plugin {
 
     Listener = this.listeners.bind(this);
 
@@ -96,10 +117,14 @@ export default class LinkIconPlugin extends siyuan.Plugin{
         InsertDocLinkIcon: false
     }
 
+    customIcons: { href: string, iconUrl: string }[] = []
+
     async onload() {
         this.initUI();
 
         let conf = await this.loadData(ConfigFile);
+        let customIcons = await this.loadData(customIconsFile);
+        this.customIcons = customIcons || [];
         if (conf) {
             for (let key in this.config) {
                 let val = conf?.[key];
@@ -108,11 +133,16 @@ export default class LinkIconPlugin extends siyuan.Plugin{
                 }
             }
         }
+        this.customIcons.forEach(icon => {
+            dynamicStyle.addIcon(icon.href, icon.iconUrl, false);
+        });
+        dynamicStyle.flushStyle();
         this.eventBus.on('loaded-protyle-static', this.Listener);
     }
 
     async onunload() {
         this.eventBus.off('loaded-protyle-static', this.Listener);
+        dynamicStyle.clearStyle();
     }
 
     initUI() {
@@ -122,9 +152,24 @@ export default class LinkIconPlugin extends siyuan.Plugin{
         const inputDocLink = document.createElement('input');
         inputDocLink.type = 'checkbox';
         inputDocLink.className = "b3-switch fn__flex-center";
+        const uploadBtn = document.createElement('button');
+        uploadBtn.className = "b3-button fn__size200";
+        uploadBtn.textContent = "上传自定义图标";
+        uploadBtn.addEventListener('click', async () => {
+            let ele = uploadCustomIcon((...args) => {
+                dialog.destroy();
+                this.onCustomIconUpload(...args);
+            });
+            const dialog = simpleDialog({
+                title: '上传自定义图标',
+                ele: ele,
+                width: '700px',
+            });
+        });
+
         this.setting = new siyuan.Setting({
-            width: '500px',
-            height: '400px',
+            width: '700px',
+            height: '500px',
             confirmCallback: () => {
                 this.config.InsertDocRefIcon = inputDocRef.checked;
                 this.config.InsertDocLinkIcon = inputDocLink.checked;
@@ -147,6 +192,21 @@ export default class LinkIconPlugin extends siyuan.Plugin{
                 return inputDocLink;
             },
         });
+        this.setting.addItem({
+            title: '上传自定义图标',
+            description: '上传自定义的 svg 图标或图片文件',
+            createActionElement: () => {
+                return uploadBtn;
+            }
+        });
+    }
+
+    private onCustomIconUpload(href: string, iconUrl: string) {
+        dynamicStyle.addIcon(href, iconUrl);
+        this.customIcons.push({ href, iconUrl });
+        this.saveData(customIconsFile, this.customIcons);
+        // Assume it is implemented by others
+        // No need to complete this function
     }
 
     async listeners(event) {
