@@ -6,5 +6,7 @@
     "InputDocLink": {
         "title": "文档链接图标",
         "description": "在文档引用 [](siyuan://) 前插入图标"
-    }
+    },
+    "upload": "上传自定义图标",
+    "manage": "管理自定义图标"
 }

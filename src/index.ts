@@ -154,21 +154,21 @@ export default class LinkIconPlugin extends siyuan.Plugin {
         inputDocLink.className = "b3-switch fn__flex-center";
         const uploadBtn = document.createElement('button');
         uploadBtn.className = "b3-button fn__size200";
-        uploadBtn.textContent = "上传自定义图标";
+        uploadBtn.textContent = this.i18n.upload;
         uploadBtn.addEventListener('click', async () => {
             let ele = uploadCustomIcon((hrefName: string, url: string) => {
                 dialog.destroy();
                 this.onCustomIconUpload(hrefName, url);
             });
             const dialog = simpleDialog({
-                title: '上传自定义图标',
+                title: this.i18n.upload,
                 ele: ele,
                 width: '700px',
             });
         });
         const manageBtn = document.createElement('button');
         manageBtn.className = "b3-button fn__size200";
-        manageBtn.textContent = "管理自定义图标";
+        manageBtn.textContent = this.i18n.manage;
         manageBtn.addEventListener('click', async () => {
             let ele = manageCustomIcons(
                 this.customIcons,
@@ -187,7 +187,7 @@ export default class LinkIconPlugin extends siyuan.Plugin {
                 }
             );
             const dialog = simpleDialog({
-                title: 'Manage Custom Icons',
+                title: this.i18n.manage,
                 ele: ele,
                 width: '400px',
             });
@@ -220,15 +220,15 @@ export default class LinkIconPlugin extends siyuan.Plugin {
             },
         });
         this.setting.addItem({
-            title: '上传自定义图标',
-            description: '上传自定义的 svg 图标或图片文件',
+            title: this.i18n.upload,
+            // description: '上传自定义的 svg 图标或图片文件',
             createActionElement: () => {
                 return uploadBtn;
             }
         });
         this.setting.addItem({
-            title: '管理自定义图标',
-            description: '查看并管理所有自定义的图标',
+            title: this.i18n.manage,
+            // description: '查看并管理所有自定义的图标',
             createActionElement: () => {
                 return manageBtn;
             }
