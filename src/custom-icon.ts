@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-09-14 19:10:09
  * @FilePath     : /src/custom-icon.ts
- * @LastEditTime : 2024-09-14 20:12:09
+ * @LastEditTime : 2024-09-14 20:20:42
  * @Description  : 
  */
 import { showMessage, type Plugin } from 'siyuan';
@@ -43,7 +43,7 @@ export const useDynamicStyle = (styleId = 'custom-icon-style') => {
     const _updateStyle = (css: string) => {
         const element = document.getElementById(styleId);
         if (element) {
-            element.style.cssText = css; // 使用 cssText 更新样式
+            element.innerHTML = css;
         } else {
             const style = document.createElement('style');
             style.id = styleId;

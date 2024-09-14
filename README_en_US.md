@@ -14,3 +14,14 @@ Default settings:
 
 - Insert icon before document references: On
 - Insert icon before document links: Off
+
+
+### Upload Custom Icon
+
+In the settings interface, click the "Upload Custom Icon" button. In the pop-up dialog:
+
+1. Enter the Website Domain, for example: example.com, youtube.com, amazon.jp, etc.
+2. Select the desired icon from the Select Icon options.
+3. Click the Upload button to upload the icon.
+
+All uploaded icons are saved in the `/data/plugins/link-icon/custom-icons` directory.

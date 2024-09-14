@@ -156,9 +156,9 @@ export default class LinkIconPlugin extends siyuan.Plugin {
         uploadBtn.className = "b3-button fn__size200";
         uploadBtn.textContent = "上传自定义图标";
         uploadBtn.addEventListener('click', async () => {
-            let ele = uploadCustomIcon((...args) => {
+            let ele = uploadCustomIcon((hrefName: string, url: string) => {
                 dialog.destroy();
-                this.onCustomIconUpload(...args);
+                this.onCustomIconUpload(hrefName, url);
             });
             const dialog = simpleDialog({
                 title: '上传自定义图标',
@@ -202,6 +202,7 @@ export default class LinkIconPlugin extends siyuan.Plugin {
     }
 
     private onCustomIconUpload(href: string, iconUrl: string) {
+        console.debug(`Upload custom icon: ${href} -> ${iconUrl}`);
         dynamicStyle.addIcon(href, iconUrl);
         this.customIcons.push({ href, iconUrl });
         this.saveData(customIconsFile, this.customIcons);

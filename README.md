@@ -17,3 +17,12 @@
 - 在文档引用前插入图标：开
 - 在文档链接前插入图标：关
 
+### 上传自定义图标
+
+在设置界面中点击“上传自定义图标”按钮，在弹出对话框中：
+
+1. 输入 Website Domain，例如：example.com, youtube.com, amazon.jp 等
+2. 在 Select Icon 选择想要的图标
+3. 点击 Upload 按钮上传图标
+
+所有上传的的图标保存在 `/data/plugins/link-icon/custom-icons` 目录下。
