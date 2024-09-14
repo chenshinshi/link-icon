@@ -2,7 +2,7 @@
 // const siyuan = require("siyuan");
 import * as siyuan from "siyuan";
 
-import { uploadCustomIcon, useDynamicStyle } from "./custom-icon";
+import { manageCustomIcons, uploadCustomIcon, useDynamicStyle } from "./custom-icon";
 
 import './style.css';
 
@@ -166,6 +166,33 @@ export default class LinkIconPlugin extends siyuan.Plugin {
                 width: '700px',
             });
         });
+        const manageBtn = document.createElement('button');
+        manageBtn.className = "b3-button fn__size200";
+        manageBtn.textContent = "管理自定义图标";
+        manageBtn.addEventListener('click', async () => {
+            let ele = manageCustomIcons(
+                this.customIcons,
+                (updatedIcons: typeof this.customIcons) => {
+                    console.debug(`Updated custom icons: ${updatedIcons}`);
+                    this.customIcons = updatedIcons;
+                    dynamicStyle.removeAllIcons();
+                    this.customIcons.forEach(icon => {
+                        dynamicStyle.addIcon(icon.href, icon.iconUrl, false);
+                    });
+                    dynamicStyle.flushStyle();
+                    this.saveData(customIconsFile, this.customIcons);
+                },
+                () => {
+                    dialog.destroy();
+                }
+            );
+            const dialog = simpleDialog({
+                title: 'Manage Custom Icons',
+                ele: ele,
+                width: '400px',
+            });
+
+        });
 
         this.setting = new siyuan.Setting({
             width: '700px',
@@ -197,6 +224,13 @@ export default class LinkIconPlugin extends siyuan.Plugin {
             description: '上传自定义的 svg 图标或图片文件',
             createActionElement: () => {
                 return uploadBtn;
+            }
+        });
+        this.setting.addItem({
+            title: '管理自定义图标',
+            description: '查看并管理所有自定义的图标',
+            createActionElement: () => {
+                return manageBtn;
             }
         });
     }

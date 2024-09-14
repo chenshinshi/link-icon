@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-09-14 19:10:09
  * @FilePath     : /src/custom-icon.ts
- * @LastEditTime : 2024-09-14 20:20:42
+ * @LastEditTime : 2024-09-14 20:53:13
  * @Description  : 
  */
 import { showMessage, type Plugin } from 'siyuan';
@@ -34,7 +34,7 @@ export const useDynamicStyle = (styleId = 'custom-icon-style') => {
 }
 ` as CSSCode;
 
-    const customStyles: Record<Href, CSSCode> = {};
+    let customStyles: Record<Href, CSSCode> = {};
 
     /**
      * 更新样式
@@ -88,6 +88,10 @@ export const useDynamicStyle = (styleId = 'custom-icon-style') => {
         }
     }
 
+    const removeAllIcons = () => {
+        customStyles = {};
+    }
+
     /**
      * 移除图标
      * @param href 链接地址
@@ -101,7 +105,7 @@ export const useDynamicStyle = (styleId = 'custom-icon-style') => {
 
     return {
         addIcon,
-        removeIcon,
+        removeAllIcons,
         clearStyle,
         flushStyle: _flushStyle,
     }
@@ -199,4 +203,78 @@ export const uploadCustomIcon = (uploadCallback: (hrefName: Href, url: IconUrl) 
     });
 
     return div;
+};
+
+
+export const manageCustomIcons = (
+    customIcons: { href: string; iconUrl: string }[],
+    updatedCustomIcons: (customIcons: { href: string; iconUrl: string }[]) => void,
+    closeCallback: () => void
+): HTMLElement => {
+    const container = document.createElement('div');
+    container.className = 'custom-icon-manager';
+
+    customIcons = [...customIcons];
+
+    Object.assign(container.style, {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        padding: '0 20px',
+        gap: '15px',
+    });
+
+    const createIconElement = (icon: { href: string; iconUrl: string }, index: number) => {
+        const iconElement = document.createElement('div');
+        iconElement.className = 'custom-icon-item';
+        Object.assign(iconElement.style, {
+            display: 'flex',
+            gap: '15px',
+            // marginBottom: '10px',
+            alignItems: 'center',
+        });
+        iconElement.innerHTML = `
+            <img src="${icon.iconUrl}" alt="Custom Icon" class="custom-icon-preview" style="height: 25px;">
+            <input type="text" class="custom-icon-href" value="${icon.href}" style="flex: 1;">
+            <button class="custom-icon-delete b3-button b3-button--outline">Delete</button>
+        `;
+
+        const hrefInput = iconElement.querySelector('.custom-icon-href') as HTMLInputElement;
+        const deleteButton = iconElement.querySelector('.custom-icon-delete') as HTMLButtonElement;
+
+        hrefInput.addEventListener('change', () => {
+            customIcons[index].href = hrefInput.value;
+            // updatedCustomIcons([...customIcons]);
+        });
+
+        deleteButton.addEventListener('click', () => {
+            customIcons.splice(index, 1);
+            iconElement.remove();
+            // updatedCustomIcons([...customIcons]);
+        });
+
+        return iconElement;
+    };
+
+    const renderIcons = () => {
+        container.innerHTML = '';
+        customIcons.forEach((icon, index) => {
+            container.appendChild(createIconElement(icon, index));
+        });
+    };
+
+    renderIcons();
+
+    const saveButton = document.createElement('button');
+    saveButton.className = 'b3-button b3-button--text';
+    saveButton.textContent = 'Save Changes';
+    saveButton.addEventListener('click', () => {
+        updatedCustomIcons([...customIcons]);
+        closeCallback();
+        showMessage('Custom icons updated successfully!');
+    });
+
+    container.appendChild(saveButton);
+
+    return container;
 };
