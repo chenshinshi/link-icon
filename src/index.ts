@@ -246,7 +246,7 @@ export default class LinkIconPlugin extends siyuan.Plugin {
 
     async listeners(event) {
         // 仅给触发加载文档的元素添加块引用图标
-        let doc = event.detail.element;
+        let doc = event.detail?.element || event.detail?.protyle?.element;
 
         if (this.config.InsertDocRefIcon) {
             let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
