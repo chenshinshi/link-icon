@@ -7,6 +7,9 @@ import { manageCustomIcons, uploadCustomIcon, useDynamicStyle } from "./custom-i
 import './style.css';
 
 const ICON_CLASS = "plugin-link-icon";
+const EVENT_LOADED_PROTYLE = 'loaded-protyle-static';
+
+type TEventLoadedProtyle = CustomEvent<siyuan.IEventBusMap['loaded-protyle-static']>;
 
 async function request(url, data) {
     // info(`Request: ${url}; data = ${JSON.stringify(data)}`);
@@ -137,11 +140,11 @@ export default class LinkIconPlugin extends siyuan.Plugin {
             dynamicStyle.addIcon(icon.href, icon.iconUrl, false);
         });
         dynamicStyle.flushStyle();
-        this.eventBus.on('loaded-protyle-static', this.Listener);
+        this.eventBus.on(EVENT_LOADED_PROTYLE, this.Listener);
     }
 
     async onunload() {
-        this.eventBus.off('loaded-protyle-static', this.Listener);
+        this.eventBus.off(EVENT_LOADED_PROTYLE, this.Listener);
         dynamicStyle.clearStyle();
     }
 
@@ -244,9 +247,9 @@ export default class LinkIconPlugin extends siyuan.Plugin {
         // No need to complete this function
     }
 
-    async listeners(event) {
+    async listeners(event: TEventLoadedProtyle) {
         // 仅给触发加载文档的元素添加块引用图标
-        let doc = event.detail.element;
+        let doc = event.detail?.protyle?.element;
 
         if (this.config.InsertDocRefIcon) {
             let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
