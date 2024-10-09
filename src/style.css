@@ -647,7 +647,7 @@
 .b3-typography a[href *="sohu.com"]::before {
 
     content: "";
-    background-image: url('plugins/link-icon/icon/souhu.svg');
+    background-image: url('plugins/link-icon/icon/souhu.ico');
 }
 
 .protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href *="guancha.cn"]:not(:empty)::before,
