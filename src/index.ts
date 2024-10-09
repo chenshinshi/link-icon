@@ -251,6 +251,11 @@ export default class LinkIconPlugin extends siyuan.Plugin {
         // 仅给触发加载文档的元素添加块引用图标
         let doc = event.detail?.protyle?.element;
 
+        if (!doc) {
+            console.warn("Listener failed to get protyle element");
+            return;
+        }
+
         if (this.config.InsertDocRefIcon) {
             let ref_list = doc.querySelectorAll("span[data-type='block-ref']");
             ref_list.forEach(async (element) => {
