@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-09-14 19:10:09
  * @FilePath     : /src/custom-icon.ts
- * @LastEditTime : 2024-09-14 20:53:13
+ * @LastEditTime : 2024-10-09 16:44:07
  * @Description  : 
  */
 import { showMessage, type Plugin } from 'siyuan';
@@ -224,6 +224,8 @@ export const manageCustomIcons = (
         gap: '15px',
     });
 
+    const deleteList: string[] = [];
+
     const createIconElement = (icon: { href: string; iconUrl: string }, index: number) => {
         const iconElement = document.createElement('div');
         iconElement.className = 'custom-icon-item';
@@ -248,6 +250,8 @@ export const manageCustomIcons = (
         });
 
         deleteButton.addEventListener('click', () => {
+            const icon = customIcons[index];
+            deleteList.push(icon.iconUrl);
             customIcons.splice(index, 1);
             iconElement.remove();
             // updatedCustomIcons([...customIcons]);
@@ -268,8 +272,18 @@ export const manageCustomIcons = (
     const saveButton = document.createElement('button');
     saveButton.className = 'b3-button b3-button--text';
     saveButton.textContent = 'Save Changes';
-    saveButton.addEventListener('click', () => {
+    saveButton.addEventListener('click', async () => {
         updatedCustomIcons([...customIcons]);
+        let deleteTasks = [];
+        for (const iconUrl of deleteList) {
+            deleteTasks.push(fetch('/api/file/removeFile', {
+                method: 'POST',
+                body: JSON.stringify({
+                    path: `/data${iconUrl}`
+                })
+            }));
+        }
+        await Promise.all(deleteTasks);
         closeCallback();
         showMessage('Custom icons updated successfully!');
     });

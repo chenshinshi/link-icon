@@ -34,8 +34,8 @@ async function sql(sql) {
  */
 async function queryDocIcon(block_id) {
     //如果不是文档块，则不添加图标
-    let blocks = await sql(`select * from blocks where id = "${block_id}"`);
-    if (blocks?.[0] === null || blocks[0].type !== 'd') {
+    let blocks = await sql(`select * from blocks where id = '${block_id}'`);
+    if (blocks?.length === 0 || blocks[0].type !== 'd') {
         // console.log(`block ${block_id} is not a doc`)
         return null;
     }
