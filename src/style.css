@@ -149,7 +149,12 @@
 .protyle-wysiwyg [data-node-id] span[data-type~='a'][data-href $=".pdf"]:not(:empty)::before,
 .protyle-wysiwyg [data-node-id] span[data-type~='url'][data-href $=".pdf"]:not(:empty)::before,
 .protyle-wysiwyg [data-node-id] a[href $=".pdf"]::before,
-.b3-typography [href ^="assets/"][href $=".pdf"]::before {
+.b3-typography [href ^="assets/"][href $=".pdf"]::before,
+.protyle-wysiwyg [data-node-id] span[data-type~=a][data-href*=".pdf?page"]:not(:empty):before,
+.protyle-wysiwyg [data-node-id] span[data-type~=url][data-href*=".pdf?page"]:not(:empty):before,
+.protyle-wysiwyg [data-node-id] a[href=".pdf?page"]:before,
+.b3-typography [href^="assets/"][href*=".pdf?page"]:before
+{
     content: "";
     background-image: url('plugins/link-icon/icon/pdf.svg');
 }
