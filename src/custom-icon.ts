@@ -215,13 +215,15 @@ export const manageCustomIcons = (
     container.className = 'custom-icon-manager';
 
     customIcons = [...customIcons];
-
+    // 控制溢出
     Object.assign(container.style, {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
         padding: '0 20px',
         gap: '15px',
+        maxHeight: '500px',
+        overflowY: 'auto'
     });
 
     const deleteList: string[] = [];
