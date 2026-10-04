@@ -8,6 +8,10 @@ import './style.css';
 
 const ICON_CLASS = "plugin-link-icon";
 const EVENT_LOADED_PROTYLE = 'loaded-protyle-static';
+// 动态图标前缀，与思源 kernel/util.FilterIconValue 及 app/src/emoji/iconValue.ts 的判定保持一致
+const DYNAMIC_ICON_PREFIX = 'api/icon/';
+// 十六进制码点（可用 - 连接多个码点，如 1f468-200d-1f4bb）
+const UNICODE_ICON_PATTERN = /^[0-9a-fA-F]+(?:-[0-9a-fA-F]+)*$/;
 
 type TEventLoadedProtyle = CustomEvent<siyuan.IEventBusMap['loaded-protyle-static']>;
 
@@ -70,16 +74,25 @@ async function queryDocIcon(block_id) {
         code: icon_code
     }
     //使用了自定义的 svg 图标 vs 使用 unicode 编码的 emoji
-    if (icon_code.toLowerCase().endsWith(".svg")) {
+    if (icon_code.startsWith(DYNAMIC_ICON_PREFIX)) {
+        //思源的动态图标，值形如 api/icon/getDynamicIcon?type=8&color=%23d23f31&content=Sy&id=xxx
+        //这类图标由内核按需渲染，直接按图片引用，不能按 emoji 或 /emojis 路径处理
+        result.type = "dynamic";
+        let src = icon_code.replace(/&amp;/g, "&");
+        result.dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="${src}" title="${icon_code}">`
+    } else if (icon_code.toLowerCase().endsWith(".svg")) {
         result.type = "svg";
         result.dom = `<img alt="${icon_code}" class="emoji ${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}">`
     } else if (icon_code.toLowerCase().match(/\.(jpeg|jpg|png)$/)) {
         result.type = "image";
         result.dom = `<img alt="${icon_code}" class="${ICON_CLASS}" src="/emojis/${icon_code}" title="${icon_code}" style="width: 1.625em; height: 1.625em; padding-right: 3px; padding-bottom:3px; border-radius: 0.5em">`
-    } else {
+    } else if (UNICODE_ICON_PATTERN.test(icon_code)) {
         result.type = "unicode";
-        result.code = String.fromCodePoint(parseInt(icon_code, 16))
+        result.code = icon_code.split("-").map(code => String.fromCodePoint(parseInt(code, 16))).join("");
         result.dom = `<span data-type="text" class="${ICON_CLASS}">${result.code}</span>`
+    } else {
+        //无法识别的图标值，不插入图标（此前会解析出码点 10 等无效字符，既显示不出图标又会在块内换行）
+        return null;
     }
 
     return result;
